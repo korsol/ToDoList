@@ -19,7 +19,7 @@ export class ToDoList extends Component {
       editTaskInput:"",
       dateInputValue:"",
       dateEditValue:"",
-
+      
       forecasts: [],
         loading: true,
         updateProject: false,
@@ -84,7 +84,7 @@ export class ToDoList extends Component {
       } 
     if(this.validateText(this.state.createTaskInput) && this.validateDate(this.state.dateInputValue)){
       this.postData(project);
-      this.setState({createTaskInput: ""});  
+      this.setState({createTaskInput: ""}); 
     }
     else{
       
