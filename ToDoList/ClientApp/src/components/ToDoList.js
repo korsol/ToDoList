@@ -42,7 +42,6 @@ export class ToDoList extends Component {
       this.state.projectInput = "";
       this.setState({addProject: false})
     }
-
   }
 
   deleteProject(projectId){
@@ -103,7 +102,6 @@ export class ToDoList extends Component {
       event.target.className +=" notValid"
       event.target.placeholder = "Enter project name!"
     }
-
   }
 
 
@@ -117,7 +115,6 @@ export class ToDoList extends Component {
       event.target.className +=" notValid"
       event.target.placeholder = "Enter task name!"
     }
-
   }
 
   handleDateInputChange(event){
@@ -138,7 +135,6 @@ export class ToDoList extends Component {
       event.target.className +=" notValid"
       event.target.placeholder = "Enter task name!"
     }
-
   }
 
   handleDateEditChange(event){
@@ -193,9 +189,9 @@ export class ToDoList extends Component {
   updateProject(id){
     let project = {
       id: id,
-      projectName: this.state.projectInput,
+      projectName: this.editProjectInput.value,
     }      
-    if(this.validateText(this.state.projectInput)){
+    if(this.validateText(this.state.projectInput) || this.validateText(this.editProjectInput.value)){
       this.updateData(project);
       this.setState({updateProject : false});
     }
@@ -208,19 +204,22 @@ export class ToDoList extends Component {
       tasks: [
         {
           id: taskId,
-          deadline: this.state.dateEditValue,
+          deadline: this.editDateInput.value,
           projectId: projectId,
           project: '',
-          taskName: this.state.editTaskInput,
+          taskName: this.editTaskInput.value,
           taskStatus: status,
           taskPriority: 0
         }
       ]
     }   
-    if(this.validateText(this.state.editTaskInput) && this.validateDate(this.state.dateEditValue)){
+    if(
+      this.validateText(this.state.editTaskInput) && this.validateDate(this.state.dateEditValue) 
+      || this.validateText(this.editTaskInput.value) && this.validateDate(this.editDateInput.value)
+    ){
       this.updateData(project);
       this.setState({updateTask : false});
-    } 
+    }
   }
 
 //RENDERING------------------------------------------/
@@ -237,10 +236,12 @@ export class ToDoList extends Component {
         return(
           <div className="task-edit-form-container">
               <input type="text" onChange={this.handleTaskEditChange}
+                ref={(input) => {this.editTaskInput = input}}
                 className="task-form-input"
                 defaultValue={name}
               />
               <input type="date" onChange={this.handleDateEditChange}
+                ref={(input) => {this.editDateInput = input}}
                 defaultValue={deadline.slice(0, -9)}
                 className="task-form-date"
               />
@@ -274,11 +275,11 @@ export class ToDoList extends Component {
   }
 
   rendProject(id, name){
-
     if(this.state.updateProject === id){
       return(
         <div className="project-header">
           <input type="text" onChange={this.handleProjectInput}
+            ref={(input) => {this.editProjectInput = input}}
             className="project-edit-form-input" defaultValue={name}
           />
           <div onClick={this.updateProject.bind(this, id, name)} className="project-edit-form-input-btn">
@@ -428,7 +429,7 @@ validateText(text){
   if(text ===""){
     return false
   }
-  else if (text.length > 2 && text.length < 31 ) {
+  else if (text.length > 2 && text.length < 41 ) {
       return true
     }
 }
