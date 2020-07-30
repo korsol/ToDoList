@@ -20,7 +20,7 @@ export class ToDoList extends Component {
       dateInputValue:"",
       dateEditValue:"",
       
-      forecasts: [],
+      todolists: [],
         loading: true,
         updateProject: false,
         updateTask: false,
@@ -326,12 +326,12 @@ export class ToDoList extends Component {
     }
   }
 
-  renderProjects(forecasts) {
+  renderProjects(todolists) {
     return (
       <div>
-        {forecasts.map(forecast =>
-            <div key={forecast.id} className="project-card">
-              {this.rendProject(forecast.id, forecast.projectName)}
+        {todolists.map(todolist =>
+            <div key={todolist.id} className="project-card">
+              {this.rendProject(todolist.id, todolist.projectName)}
               <div className="container mt-3">
                 <div className="task-form-container">
                   <div className="task-form-input-container">
@@ -345,14 +345,14 @@ export class ToDoList extends Component {
                       className="task-form-date"
                     />
                   </div>
-                  <button onClick={this.createTask.bind(this, forecast.id, forecast.name)}
+                  <button onClick={this.createTask.bind(this, todolist.id, todolist.name)}
                     className="task-form-btn">
                     Add Task
                   </button>
                 </div>
               </div>
               <div className="task-list-container">
-                {forecast.tasks.map(task =>
+                {todolist.tasks.map(task =>
                   <li key={task.id} className="task-list-item">
                     {this.rendTask(task.id, task.projectId, task.taskName, task.deadline, task.taskStatus)}
                   </li>
@@ -367,7 +367,7 @@ export class ToDoList extends Component {
   render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-      : this.renderProjects(this.state.forecasts);
+      : this.renderProjects(this.state.todolists);
 
     return (
       <div className="main-container">
@@ -383,7 +383,7 @@ export class ToDoList extends Component {
         
       const response = await fetch('ToDoList');
       const data = await response.json();
-      this.setState({ forecasts: data, loading: false });
+      this.setState({ todolists: data, loading: false });
     }
 
     async postData(project){
