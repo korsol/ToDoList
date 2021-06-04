@@ -13,7 +13,7 @@ namespace ToDoList.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Data Source = SQL5063.site4now.net; Initial Catalog = DB_A64ECD_theKorsol; User Id = DB_A64ECD_theKorsol_admin; Password = _29tETdHr!SBW8V");
+            optionsBuilder.UseSqlServer(@"Data Source = SQL5097.site4now.net; Initial Catalog = db_a75450_korsol; User Id = db_a75450_korsol_admin; Password = 172099ahs");
         }
         public ToDoListContext()
         {

@@ -215,14 +215,28 @@ input[type="text" i].task-form-input{
 }
 
 .task-nav{
-  flex: 1;
+  flex: 2;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.task-nav-edit-btn{
+.task-nav-priority-container{
+  display: flex;
+  flex-direction: column;
   padding-right: 10px;
+  border-right: 1px solid #cccccc;
+  color: #999999;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+.task-nav-priority-btn{
+  padding: 3px 7px 0 0;
+}
+
+.task-nav-edit-btn{
+  padding: 0 10px;
   border-right: 1px solid #cccccc;
   color: #999999;
   visibility: hidden;
@@ -245,6 +259,10 @@ input[type="text" i].task-form-input{
 }
 
 .task-container:hover .task-nav-delete-btn{
+  visibility: visible;
+}
+
+.task-container:hover .task-nav-priority-container{
   visibility: visible;
 }
 

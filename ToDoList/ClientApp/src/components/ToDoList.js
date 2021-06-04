@@ -20,7 +20,7 @@ export class ToDoList extends Component {
       dateInputValue:"",
       dateEditValue:"",
       
-      forecasts: [],
+      projects: [],
         loading: true,
         updateProject: false,
         updateTask: false,
@@ -56,8 +56,8 @@ export class ToDoList extends Component {
     this.setState({addProject : false});
   }
 
-  editTask(id){
-    this.setState({updateTask : id});
+  editTask(task){
+    this.setState({updateTask : task.id});
   }
 
 
@@ -66,23 +66,24 @@ export class ToDoList extends Component {
     this.setState({updateProject: false});
   }
 
-  createTask(projectId, name) {
-      let project = {
-        id: projectId,
-        projectName: name,
+  createTask(project) {
+      let taskPr = project.tasks.length == 0 ? 0 : project.tasks[project.tasks.length - 1].taskPriority + 1
+      let UpdatedProject = {
+        id: project.id,
+        projectName: project.projectName,
         tasks: [
           {
             deadline: this.state.dateInputValue,
-            projectId: projectId,
-            project: name,
+            projectId: project.id,
+            project: project.projectName,
             taskName: this.state.createTaskInput,
             taskStatus: 0,
-            taskPriority: 0
+            taskPriority: taskPr
           }
         ]
       } 
     if(this.validateText(this.state.createTaskInput) && this.validateDate(this.state.dateInputValue)){
-      this.postData(project);
+      this.postData(UpdatedProject);
       this.setState({createTaskInput: ""}); 
     }
     else{
@@ -147,41 +148,21 @@ export class ToDoList extends Component {
 
 //HANDLERS----------------------------------------------------------------/
 
-  deleteTask(TaskId){
+  deleteTask(task){
     let project = {
       id: 0,
       projectName: '',
-      tasks: [
-        {
-          id: TaskId,
-          deadline: "2020-06-20T00:00:00",
-          projectId: 0,
-          project: '',
-          taskName: '',
-          taskStatus: 0,
-          taskPriority: 0
-        }
-      ]
+      tasks: [ task ]
     }
     this.deleteData(project);
   }
 
-  changeTaskStatus(TaskId, projectId, name, status, deadline){  
-    status === 0? status = 1: status = 0
+  changeTaskStatus(task){  
+    task.taskStatus === 0? task.taskStatus = 1: task.taskStatus = 0
       let project = {
         id: 0,
         projectName: '',
-        tasks: [
-          {
-            id: TaskId,
-            deadline: deadline,
-            projectId: projectId,
-            project: '',
-            taskName: name,
-            taskStatus: status,
-            taskPriority: 0
-          }
-        ]
+        tasks: [ task ]
       }      
       this.updateData(project);
   }
@@ -197,21 +178,13 @@ export class ToDoList extends Component {
     }
   }
 
-  updateTask(taskId, projectId, status){
+  updateTask(task){
+    task.deadline = this.editDateInput.value
+    task.taskName = this.editTaskInput.value
     let project = {
-      id: projectId,
+      id: task.projectId,
       projectName: '',
-      tasks: [
-        {
-          id: taskId,
-          deadline: this.editDateInput.value,
-          projectId: projectId,
-          project: '',
-          taskName: this.editTaskInput.value,
-          taskStatus: status,
-          taskPriority: 0
-        }
-      ]
+      tasks: [ task ]
     }   
     if(
       this.validateText(this.state.editTaskInput) && this.validateDate(this.state.dateEditValue) 
@@ -222,30 +195,55 @@ export class ToDoList extends Component {
     }
   }
 
+  сhangeTaskPriority(task, changeVal){
+    let project = this.state.projects.find((pr) => pr.id == task.projectId )
+    let adjacentTask
+    for (let i = 1; i <= project.tasks.length; i++) {
+      let findedTask = project.tasks.find((tsk)=> tsk.taskPriority == (task.taskPriority + (changeVal * i)))
+      console.log(changeVal * i)
+      if (findedTask != undefined){
+        adjacentTask = findedTask
+        break
+      }
+    }
+    
+    if (adjacentTask != undefined){
+      let taskPriorityBuffer = task.taskPriority
+      task.taskPriority = adjacentTask.taskPriority
+      adjacentTask.taskPriority = taskPriorityBuffer
+
+      project.tasks = [task]
+      this.updateData(project);
+      project.tasks = [adjacentTask]
+      this.updateData(project);
+    }
+
+  }
+
 //RENDERING------------------------------------------/
-  rendTaskStatus(status, taskId, projectId, name, deadline){
+  rendTaskStatus(task){
       return (
-        <input type="checkbox" checked={status === 0? "":"checked"}
-        onChange={this.changeTaskStatus.bind(this, taskId, projectId, name, status, deadline)}
+        <input type="checkbox" checked={task.taskStatus === 0? "":"checked"}
+        onChange={this.changeTaskStatus.bind(this, task)}
         />  
       );
   }
   
-  rendTask(id, projectId, name, deadline, status){
-      if (this.state.updateTask === id) {
+  rendTask(task){
+      if (this.state.updateTask === task.id) {
         return(
           <div className="task-edit-form-container">
               <input type="text" onChange={this.handleTaskEditChange}
                 ref={(input) => {this.editTaskInput = input}}
                 className="task-form-input"
-                defaultValue={name}
+                defaultValue={task.taskName}
               />
               <input type="date" onChange={this.handleDateEditChange}
                 ref={(input) => {this.editDateInput = input}}
-                defaultValue={deadline.slice(0, -9)}
+                defaultValue={task.deadline.slice(0, -9)}
                 className="task-form-date"
               />
-              <div onClick={this.updateTask.bind(this, id, projectId, status)} className="task-edit-form-btn">
+              <div onClick={this.updateTask.bind(this, task)} className="task-edit-form-btn">
                 <i className="fas fa-check"></i>
               </div>
           </div>
@@ -254,17 +252,25 @@ export class ToDoList extends Component {
         return(
           <div className="task-container">
           <div className="task-checkbox-container">
-            {this.rendTaskStatus(status, id, projectId, name, deadline)}
+            {this.rendTaskStatus(task)}
           </div>
-          <div className={status === 0?"task-name": "task-name task-done"}>{name}</div>
-          <div className={this.validateDate(deadline)? "task-deadline":"task-deadline notValidData" }>
-            {deadline.slice(0, -9)}
+          <div className={task.taskStatus === 0?"task-name": "task-name task-done"}>{task.taskName}</div>
+          <div className={this.validateDate(task.deadline)? "task-deadline":"task-deadline notValidData" }>
+            {task.deadline.slice(0, -9)}
           </div>
           <div className="task-nav">
-            <div onClick={this.editTask.bind(this, id)} className="task-nav-edit-btn">
+            <div className="task-nav-priority-container">
+              <div onClick={this.сhangeTaskPriority.bind(this, task, -1)} className="task-nav-priority-btn" >
+                <i className="fas fa-angle-up"></i>
+              </div>
+              <div onClick={this.сhangeTaskPriority.bind(this, task, 1)} className="task-nav-priority-btn">
+                <i className="fas fa-angle-down"></i>
+              </div>
+            </div>
+            <div onClick={this.editTask.bind(this, task)} className="task-nav-edit-btn">
               <i className="fas fa-pencil-alt"></i>
             </div>
-            <div onClick={this.deleteTask.bind(this, id)} className="task-nav-delete-btn">
+            <div onClick={this.deleteTask.bind(this, task)} className="task-nav-delete-btn">
               <i className="fas fa-trash-alt"></i>
             </div>
           </div>
@@ -326,12 +332,12 @@ export class ToDoList extends Component {
     }
   }
 
-  renderProjects(forecasts) {
+  renderProjects(projects) {
     return (
       <div>
-        {forecasts.map(forecast =>
-            <div key={forecast.id} className="project-card">
-              {this.rendProject(forecast.id, forecast.projectName)}
+        {projects.map(project =>
+            <div key={project.id} className="project-card">
+              {this.rendProject(project.id, project.projectName)}
               <div className="container mt-3">
                 <div className="task-form-container">
                   <div className="task-form-input-container">
@@ -345,16 +351,17 @@ export class ToDoList extends Component {
                       className="task-form-date"
                     />
                   </div>
-                  <button onClick={this.createTask.bind(this, forecast.id, forecast.name)}
+                  <button onClick={this.createTask.bind(this, project)}
                     className="task-form-btn">
                     Add Task
                   </button>
                 </div>
               </div>
               <div className="task-list-container">
-                {forecast.tasks.map(task =>
+                {project.tasks.sort((firstTask, secondTask) => firstTask.taskPriority - secondTask.taskPriority )
+                              .map(task =>
                   <li key={task.id} className="task-list-item">
-                    {this.rendTask(task.id, task.projectId, task.taskName, task.deadline, task.taskStatus)}
+                    {this.rendTask(task)}
                   </li>
                 )}
               </div>
@@ -367,7 +374,7 @@ export class ToDoList extends Component {
   render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-      : this.renderProjects(this.state.forecasts);
+      : this.renderProjects(this.state.projects);
 
     return (
       <div className="main-container">
@@ -379,11 +386,10 @@ export class ToDoList extends Component {
 //RENDERING------------------------------------------/
 
 //ASYNC REQESTS------------------------------------------/
-    async populateData() {
-        
+    async populateData() {       
       const response = await fetch('ToDoList');
       const data = await response.json();
-      this.setState({ forecasts: data, loading: false });
+      this.setState({ projects: data, loading: false });
     }
 
     async postData(project){
@@ -394,7 +400,6 @@ export class ToDoList extends Component {
         },
         body: JSON.stringify(project)
       })
-      let result = await response.json();
       this.populateData();
     }
 
@@ -406,7 +411,6 @@ export class ToDoList extends Component {
         },
         body: JSON.stringify(project)
       })
-      let result = await response.json();
       this.populateData();
     }
 
@@ -418,7 +422,6 @@ export class ToDoList extends Component {
         },
         body: JSON.stringify(project)
       })
-      let result = await response.json();
       this.populateData();
     }
 //ASYNC REQESTS------------------------------------------/
