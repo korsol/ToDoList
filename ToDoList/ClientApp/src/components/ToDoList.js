@@ -198,9 +198,8 @@ export class ToDoList extends Component {
   сhangeTaskPriority(task, changeVal){
     let project = this.state.projects.find((pr) => pr.id == task.projectId )
     let adjacentTask
-    for (let i = 1; i <= project.tasks.length; i++) {
+    for (let i = 1; i <= project.tasks[project.tasks.length-1].taskPriority; i++) {
       let findedTask = project.tasks.find((tsk)=> tsk.taskPriority == (task.taskPriority + (changeVal * i)))
-      console.log(changeVal * i)
       if (findedTask != undefined){
         adjacentTask = findedTask
         break
